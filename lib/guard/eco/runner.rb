@@ -111,7 +111,13 @@ module Guard
           FileUtils.mkdir_p(File.expand_path(directory)) if !File.directory?(directory) && !options[:noop]
           template_name = File.join(directory, File.basename(file.gsub(/\.(js\.eco|eco)$/, '')))
           filename = "#{template_name}.js"
-          content = "window.JST['#{template_name}'] = #{content}"
+          template_name = template_name.split(/\/|\./).slice(-3, 2).join('/')
+          content = <<-EOF
+(function() {
+  this.JST || (this.JST = {});
+  this.JST["#{template_name}"] = #{content}
+}).call(this);
+EOF
           File.open(File.expand_path(filename), 'w') { |f| f.write(content) } if !options[:noop]
 
           filename
